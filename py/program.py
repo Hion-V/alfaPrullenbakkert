@@ -3,11 +3,13 @@ import sys
 import os
 import servo
 import ultra as ultra
-
+import time as time
+import tweeter as twit
 open = False
 avgfaces = []
 while(True):
-	if(ultra.getDist() < 5):
+	dist = ultra.getDist()
+	if(dist < 15):
 		os.system("fswebcam -q image.jpg");
 		# Get user supplied values
 		imagePath = "image.jpg"
@@ -36,23 +38,20 @@ while(True):
 		    cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
 		
 		numfaces = len(faces)
-		if (len(avgfaces) >= 5):
-			avgfaces.pop(0)
-		avgfaces.append(numfaces)
-		totalnum = 0
-		for (anum) in avgfaces:
-			totalnum += anum 
-		if (totalnum >2):
-			if(open == False):
-				print("More than 2 of the last 5 pictures had a face, OPEN!")
+		if (numfaces >0):
+			#if(open == False):
+				print("You have a face, OPEN!")
 				open = True
+				os.system("aplay Hello.wav");
 				servo.open()
-		if (totalnum <2):
-			if(open == True):
-				print("less than 2 of the last 5 pictures had a face, CLOSE!")
-				open = False
-				servo.halfClose()
-				servo.close()
+				while(ultra.getDist() < 10):
+					print("waiting for hand removal");
+					time.sleep(1);
+				os.system("aplay bye.wav");
+				servo.close();
+				twit.tweet();
+				
+				
 		#cv2.imshow("Faces found", image)
 		cv2.waitKey(0)
 	#else:
